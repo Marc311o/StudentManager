@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="498.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.studentmanager.client.ManagementController">
+
+    <children>
+
+        <Label layoutX="15.0" layoutY="14.0" prefHeight="26.0" prefWidth="592.0" text="Studenci">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font>
+        </Label>
+
+      <TableView layoutX="17.0" layoutY="40.0" prefHeight="180.0" prefWidth="716.0">
+          <columns>
+          <TableColumn prefWidth="77.19999694824219" text="Imię" />
+          <TableColumn prefWidth="73.20001220703125" text="Nazwisko" />
+            <TableColumn prefWidth="75.0" text="Nr indeksu" />
+        </columns>
+          <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+         </columnResizePolicy>
+      </TableView>
+
+      <Label layoutX="17.0" layoutY="236.0" text="Przedmioty i Oceny">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font></Label>
+
+      <TableView layoutX="17.0" layoutY="262.0" prefHeight="180.0" prefWidth="716.0">
+        <columns>
+          <TableColumn prefWidth="75.0" text="Przedmiot" />
+          <TableColumn prefWidth="75.0" text="Ocena" />
+        </columns>
+      </TableView>
+
+      <Button layoutX="634.0" layoutY="458.0" mnemonicParsing="false" text="Dodaj Studenta" />
+
+      <Button layoutX="516.0" layoutY="458.0" mnemonicParsing="false" text="Dodaj przedmiot" />
+
+      <Button layoutX="157.0" layoutY="458.0" mnemonicParsing="false" text="Usuń zaznaczonego Studenta" />
+
+      <Button layoutX="341.0" layoutY="458.0" mnemonicParsing="false" text="Usuń zaznaczony przedmiot" />
+
+      <Button layoutX="17.0" layoutY="458.0" mnemonicParsing="false" text="Powrót" onAction="#goBackToMenuBtnRelease"/>
+
+   </children>
+</AnchorPane>

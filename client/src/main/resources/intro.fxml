@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="420.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.studentmanager.client.IntroController">
+
+    <Label alignment="CENTER" layoutY="72.0" prefHeight="18.0" prefWidth="400.0" text="Student Manager" textAlignment="CENTER">
+        <font>
+            <Font size="23.0" />
+        </font>
+    </Label>
+
+    <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="120.0" layoutY="114.0" pickOnBounds="true" preserveRatio="true">
+        <image>
+            <Image url="@/logo_square.jpg" />
+        </image>
+    </ImageView>
+
+    <Button layoutX="134.0" layoutY="305.0" mnemonicParsing="false" onAction="#setGoBtnRelease" text="Przejdź do studentów" />
+
+</AnchorPane>
