@@ -1,0 +1,12 @@
+# --- Maven (Budowanie) ---
+target/
+*.log
+
+# --- IntelliJ IDEA (Ustawienia IDE) ---
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# --- Inne ---
+.DS_Store
