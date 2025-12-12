@@ -11,15 +11,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ManagementController {
 
@@ -47,8 +46,8 @@ public class ManagementController {
         gradeTable.setPlaceholder(new javafx.scene.control.Label("Wybierz studenta, aby zobaczyć oceny"));
 
         // TODO: repalce subsequent line with server data
-        // TODO: also make sure that all fields from final data model responds to this
-        studentTable.setItems(prepareDummyData());
+        //  also make sure that all fields from final data model responds to this
+        studentTable.setItems(prepareDummyData()); // this one btw
 
         studentTable.getSelectionModel().clearSelection();
 
@@ -66,7 +65,6 @@ public class ManagementController {
                 });
 
     }
-
 
     private void showStudentsGrades(TempStudent student) {
 
@@ -123,7 +121,74 @@ public class ManagementController {
         return listaStudentow;
     }
 
-    
+    // data deletion
+    private boolean confirmDeletion(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+
+        javafx.scene.control.DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm()
+        );
+
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image(getClass().getResource("/logo_square.jpg").toString()));
+
+        Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
+        okButton.setText("Usuń");
+        okButton.getStyleClass().add("danger-button");
+
+        Button cancelButton = (Button) dialogPane.lookupButton(ButtonType.CANCEL);
+        cancelButton.setText("Anuluj");
+
+        Optional<ButtonType> res = alert.showAndWait();
+
+        return res.isPresent() && res.get() == ButtonType.OK;
+    }
+
+    @FXML
+    public void deleteStudentAction() {
+
+        TempStudent wybranyStudent = studentTable.getSelectionModel().getSelectedItem();
+
+        if (wybranyStudent == null) return;
+
+        boolean agreement = confirmDeletion("Usuwanie studenta",
+                "Czy na pewno chcesz usunąć studenta " + wybranyStudent.getImie() + " " + wybranyStudent.getNazwisko() + "?");
+
+        if (agreement) {
+            studentTable.getItems().remove(wybranyStudent);
+            gradeTable.getItems().clear();
+
+            // TODO: server data integration
+            System.out.println("Usunięto studenta: " + wybranyStudent.getImie() + " " + wybranyStudent.getNazwisko());
+        }
+    }
+
+    @FXML
+    public void deleteGradeAction() {
+
+        TempPrzedmiot wybranaOcena = gradeTable.getSelectionModel().getSelectedItem();
+        TempStudent wybranyStudent = studentTable.getSelectionModel().getSelectedItem();
+
+        if (wybranaOcena == null || wybranyStudent == null) return;
+
+        boolean zgoda = confirmDeletion("Usuwanie oceny",
+                "Czy chcesz usunąć ocenę " + wybranaOcena.getOcena() + " z przedmiotu " + wybranaOcena.getNazwa() + "?");
+
+        if (zgoda) {
+            wybranyStudent.getPrzedmioty().remove(wybranaOcena);
+            gradeTable.getItems().remove(wybranaOcena);
+
+            // TODO: Server data integration here
+
+            if (gradeTable.getItems().isEmpty()) showStudentsGrades(wybranyStudent);
+        }
+    }
+
+
     public void goBackToMenuBtnRelease(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/intro.fxml")));
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -134,6 +199,5 @@ public class ManagementController {
         stage.show();
 
     }
-
 
 }

@@ -45,9 +45,9 @@
 
     <Button layoutX="516.0" layoutY="458.0" mnemonicParsing="false" text="Dodaj przedmiot"/>
 
-    <Button fx:id="deleteStudentBtn" layoutX="157.0" layoutY="458.0" mnemonicParsing="false" text="Usuń zaznaczonego Studenta"/>
+    <Button fx:id="deleteStudentBtn" layoutX="157.0" layoutY="458.0" mnemonicParsing="false" text="Usuń zaznaczonego Studenta" onAction="#deleteStudentAction"/>
 
-    <Button fx:id="deleteGradeBtn" layoutX="341.0" layoutY="458.0" mnemonicParsing="false" text="Usuń zaznaczony przedmiot"/>
+    <Button fx:id="deleteGradeBtn" layoutX="341.0" layoutY="458.0" mnemonicParsing="false" text="Usuń zaznaczony przedmiot" onAction="#deleteGradeAction"/>
 
     <Button layoutX="17.0" layoutY="458.0" mnemonicParsing="false" text="Powrót" onAction="#goBackToMenuBtnRelease"/>
 

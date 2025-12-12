@@ -1,4 +1,4 @@
-/* style.css */
+/* MAIN STYLE */
 
 Button {
     -fx-background-color: #0d6efd;
@@ -22,4 +22,38 @@ Button:hover {
 Button:pressed {
     -fx-background-color: #0a58ca;
     -fx-border-color: #0a53be;
+}
+
+/* POPUP STYLE */
+.dialog-pane {
+    -fx-background-color: #ffffff;
+    -fx-font-size: 14px;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #333333;
+}
+
+
+.dialog-pane .button {
+    -fx-background-color: #e0e0e0;
+    -fx-text-fill: black;
+    -fx-background-radius: 4px;
+    -fx-padding: 4px 8px;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #d0d0d0;
+}
+
+
+.danger-button {
+    -fx-background-color: #dc3545 !important;
+    -fx-text-fill: white !important;
+    /*-fx-font-weight: bold;*/
+}
+
+.danger-button:hover {
+    -fx-background-color: #bb2d3b !important;
 }
