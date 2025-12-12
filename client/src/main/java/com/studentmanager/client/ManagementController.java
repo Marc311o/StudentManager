@@ -13,6 +13,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class ManagementController {
     @FXML private TableColumn<TempPrzedmiot, String> nameCol;
     @FXML private TableColumn<TempPrzedmiot, Number> gradeCol;
 
-    // przyciski
+    // buttons
     @FXML private Button deleteStudentBtn;
     @FXML private Button deleteGradeBtn;
 
@@ -134,7 +135,7 @@ public class ManagementController {
         );
 
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-        stage.getIcons().add(new Image(getClass().getResource("/logo_square.jpg").toString()));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/logo_square.jpg")).toString()));
 
         Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
         okButton.setText("Usuń");
@@ -188,7 +189,175 @@ public class ManagementController {
         }
     }
 
+    // data addition
+    @FXML
+    public void addStudentAction() {
 
+        Dialog<TempStudent> dialog = new Dialog<>();
+        dialog.setTitle("Nowy Student");
+        dialog.setHeaderText("Wprowadź dane studenta");
+
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
+        dialogPane.getStyleClass().add("dialog-pane");
+
+        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/logo_square.jpg")).toString()));
+
+        ButtonType saveBtnType = new ButtonType("Zapisz", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveBtnType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        TextField firstnameField = new TextField();
+        firstnameField.setPromptText("Imię");
+        TextField surnameField = new TextField();
+        surnameField.setPromptText("Nazwisko");
+        TextField indField = new TextField();
+        indField.setPromptText("123456");
+
+        grid.add(new Label("Imię:"), 0, 0);
+        grid.add(firstnameField, 1, 0);
+        grid.add(new Label("Nazwisko:"), 0, 1);
+        grid.add(surnameField, 1, 1);
+        grid.add(new Label("Indeks:"), 0, 2);
+        grid.add(indField, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+
+        Node saveBtn = dialogPane.lookupButton(saveBtnType);
+        saveBtn.getStyleClass().add("btn-success");
+        saveBtn.setDisable(true);
+
+        saveBtn.disableProperty().bind(
+                firstnameField.textProperty().isEmpty()
+                        .or(surnameField.textProperty().isEmpty())
+                        .or(indField.textProperty().isEmpty())
+        );
+
+        saveBtn.addEventFilter(ActionEvent.ACTION, event -> {
+            try {
+                Long.parseLong(indField.getText());
+            } catch (NumberFormatException e) {
+                event.consume();
+
+
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Błąd danych");
+                alert.setHeaderText("Nieprawidłowy format indeksu");
+                alert.setContentText("Numer indeksu musi składać się wyłącznie z cyfr!");
+
+                alert.getDialogPane().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
+                Stage inn_stage = (Stage) alert.getDialogPane().getScene().getWindow();
+                inn_stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/logo_square.jpg")).toString()));
+
+                alert.showAndWait();
+            }
+        });
+
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveBtnType) {
+                return new TempStudent(
+                        firstnameField.getText(),
+                        surnameField.getText(),
+                        Long.parseLong(indField.getText()),
+                        new ArrayList<>()
+                );
+            }
+            return null;
+        });
+
+        Optional<TempStudent> result = dialog.showAndWait();
+
+        result.ifPresent(student -> {
+            studentTable.getItems().add(student);
+            System.out.println("Dodano studenta: " + student.getNazwisko());
+            // TODO: server integration
+        });
+    }
+
+    @FXML
+    public void addGradeAction() {
+
+        TempStudent chosenStudent = studentTable.getSelectionModel().getSelectedItem();
+        if (chosenStudent == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Błąd");
+            alert.setHeaderText("Nie wybrano studenta");
+            alert.setContentText("Aby dodać ocenę, najpierw zaznacz studenta z listy.");
+            alert.getDialogPane().getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
+            Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
+            stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/logo_square.jpg")).toString()));
+            alert.showAndWait();
+            return;
+        }
+
+        Dialog<TempPrzedmiot> dialog = new Dialog<>();
+        dialog.setTitle("Nowa Ocena");
+        dialog.setHeaderText("Dodawanie oceny dla: " + chosenStudent.getImie());
+
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
+
+        dialogPane.getStyleClass().add("dialog-pane");
+
+        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/logo_square.jpg")).toString()));
+
+        ButtonType zapiszBtnType = new ButtonType("Dodaj", ButtonBar.ButtonData.OK_DONE);
+        dialogPane.getButtonTypes().addAll(zapiszBtnType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("Np. Programowanie");
+
+        ComboBox<Integer> ocenaBox = new ComboBox<>();
+        ocenaBox.getItems().addAll(2, 3, 4, 5);
+        ocenaBox.setValue(3);
+
+        grid.add(new Label("Przedmiot:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Ocena:"), 0, 1);
+        grid.add(ocenaBox, 1, 1);
+
+        dialogPane.setContent(grid);
+
+        Node addBtn = dialogPane.lookupButton(zapiszBtnType);
+        addBtn.setDisable(true);
+        addBtn.getStyleClass().add("btn-success");
+
+        nameField.textProperty().addListener((observable, oldValue, newValue) -> {
+            addBtn.setDisable(newValue.trim().isEmpty());
+        });
+
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == zapiszBtnType) return new TempPrzedmiot(nameField.getText(), ocenaBox.getValue());
+            return null;
+        });
+
+        // TODO: fix class to permanent datamodel
+        Optional<TempPrzedmiot> result = dialog.showAndWait();
+
+        result.ifPresent(przedmiot -> {
+            chosenStudent.getPrzedmioty().add(przedmiot);
+            showStudentsGrades(chosenStudent);
+
+            // TODO: (yeah you guessed it) server data integration
+            System.out.println("Dodano ocenę z przedmiotu: " + przedmiot.getNazwa());
+        });
+    }
+
+    // back to main menu
     public void goBackToMenuBtnRelease(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/intro.fxml")));
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

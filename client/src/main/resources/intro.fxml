@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.studentmanager.client.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
@@ -20,6 +19,6 @@
         </image>
     </ImageView>
 
-    <Button layoutX="114.0" layoutY="291.0" mnemonicParsing="false" onAction="#setGoBtnRelease" prefHeight="35.0" prefWidth="170.0" text="Przejdź do studentów" />
+    <Button layoutX="114.0" layoutY="300.0" mnemonicParsing="false" onAction="#setGoBtnRelease" prefHeight="26.0" prefWidth="170.0" text="Przejdź do studentów" />
 
 </AnchorPane>
