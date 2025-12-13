@@ -82,9 +82,11 @@ Komunikacja sieciowa powinna być obsługiwana w osobnym wątku. W przypadku apl
 
 ---
 ## Tasks
-
 ### Task 1
-
+Diagram UML klas
+![img](docs-resources/UML_Class.png)
+Diagram relacji bazy danych
+![img](docs-resources/DB_Relationship.png)
 ### Task 2
 
 ### Task 3
