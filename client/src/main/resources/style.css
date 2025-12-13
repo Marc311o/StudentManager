@@ -1,0 +1,84 @@
+/*  =====================================================
+    = MAIN STYLE
+    ===================================================== */
+
+Button {
+    -fx-background-color: #0d6efd;
+    -fx-text-fill: white;
+    /*-fx-font-size: 14px;*/
+    /*-fx-font-weight: bold;*/
+    -fx-background-radius: 4px;
+    /*-fx-padding: 8px 16px;*/
+    -fx-padding: 4px 8px;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+}
+
+
+Button:hover {
+    -fx-background-color: #0b5ed7;
+}
+
+Button:pressed {
+    -fx-background-color: #0a58ca;
+    -fx-border-color: #0a53be;
+}
+
+/*  =====================================================
+    = POPUP STYLE
+    ===================================================== */
+.dialog-pane {
+    -fx-background-color: #ffffff;
+    -fx-font-size: 14px;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #333333;
+}
+
+
+.dialog-pane .button {
+    -fx-background-color: #e0e0e0;
+    -fx-text-fill: black;
+    -fx-background-radius: 4px;
+    -fx-padding: 4px 8px;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .button:hover {
+    -fx-background-color: #d0d0d0;
+}
+
+
+.danger-button {
+    -fx-background-color: #dc3545 !important;
+    -fx-text-fill: white !important;
+    /*-fx-font-weight: bold;*/
+}
+
+.danger-button:hover {
+    -fx-background-color: #bb2d3b !important;
+}
+
+.btn-success {
+    -fx-background-color: #198754 !important;
+    -fx-text-fill: white;
+    /*-fx-font-weight: bold;*/
+    -fx-background-radius: 4px;
+}
+
+.btn-success:hover {
+    -fx-background-color: #157347 !important;
+}
+
+.btn-success:pressed {
+    -fx-background-color: #146c43 !important;
+    -fx-border-color: #13653f;
+}
+
+
+.btn-success:disabled {
+    -fx-opacity: 0.65;
+    -fx-background-color: #198754 !important;
+}
