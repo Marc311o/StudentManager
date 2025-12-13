@@ -5,10 +5,10 @@
 ## Table of contents
 - [Original Assignment](#original-assignment)
 - [Tasks](#Tasks)
-  - [Task 1](#task-1)❌
-  - [Task 2](#task-2)❌
-  - [Task 3](#task-3)❌
-  - [Task 4](#task-4)❌
+  - [Task 1](#task-1)✅
+  - [Task 2](#task-2)⏳
+  - [Task 3](#task-3)⏳
+  - [Task 4](#task-4)⏳
 
 ---
 ## Original assignment
@@ -82,8 +82,17 @@ Komunikacja sieciowa powinna być obsługiwana w osobnym wątku. W przypadku apl
 
 ---
 ## Tasks
-
 ### Task 1
+**Diagram UML klas**
+
+<div align="center">
+  <img src="docs-resources/uml_class_no_bg.png" width="400" />
+</div>
+
+**Diagram relacji bazy danych**
+<div align="center">
+  <img src="docs-resources/DB_Relationship.png" width="700" />
+</div>
 
 ### Task 2
 
