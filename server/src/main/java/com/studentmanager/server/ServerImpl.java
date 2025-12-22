@@ -2,9 +2,13 @@ package com.studentmanager.server;
 
 import com.studentmanager.shared.*;
 import javax.persistence.*;
+import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class ServerImpl extends UnicastRemoteObject implements StudentService {
@@ -12,14 +16,32 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
 
     protected ServerImpl() throws RemoteException {
         super();
-        this.emf = Persistence.createEntityManagerFactory("StudentPU");
+        Properties fileProps = new Properties();
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("db.properties")) {
+            if (input == null) {
+                System.out.println("Nie znaleziono db.properties - upewnij się, że plik jest w resources.");
+                return;
+            }
+            fileProps.load(input);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Map<String, String> jpaProps = new HashMap<>();
+
+
+        jpaProps.put("javax.persistence.jdbc.url", fileProps.getProperty("db.url"));
+        jpaProps.put("javax.persistence.jdbc.user", fileProps.getProperty("db.user"));
+        jpaProps.put("javax.persistence.jdbc.password", fileProps.getProperty("db.password"));
+
+        this.emf = Persistence.createEntityManagerFactory("StudentPU", jpaProps);
     }
 
     @Override
     public List<StudentDTO> getAllStudents() throws RemoteException {
         EntityManager em = emf.createEntityManager();
         try {
-            // Pobieramy czystą listę studentów bez joinowania ocen (bo Student nie ma pola grades)
+
             List<Student> students = em.createQuery("SELECT s FROM Student s", Student.class)
                     .getResultList();
             
@@ -108,7 +130,6 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
             Student s = em.find(Student.class, studentId);
             if (s == null) throw new IllegalArgumentException("Student nie istnieje");
 
-            // Znajdź lub stwórz kurs
             Course course;
             try {
                 course = em.createQuery("SELECT c FROM Course c WHERE c.name = :name", Course.class)

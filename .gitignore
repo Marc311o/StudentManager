@@ -10,3 +10,5 @@ target/
 
 # --- Inne ---
 .DS_Store
+
+*.properties
