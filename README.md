@@ -123,12 +123,13 @@ graficznego.
 
 ##### Model klasy `Grade`
 
-```
+```java
+
 @Entity
-@Table(name = "grades", 
-    uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"student_id", "course_id"})
-    }
+@Table(name = "grades",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"student_id", "course_id"})
+        }
 )
 public class Grade implements Serializable {
 
@@ -148,7 +149,7 @@ public class Grade implements Serializable {
     @JoinColumn(name = "course_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Course course;
-[...]
+//...
 }
 ```
 
@@ -160,7 +161,8 @@ co uniemożliwia wystawienie studentowi więcej niż jednej oceny z tego samego 
 
 ##### Model klasy `Student`
 
-```
+```java
+
 @Entity
 @Table(name = "students")
 public class Student implements Serializable {
@@ -178,14 +180,15 @@ public class Student implements Serializable {
     @Column(name = "index_number", nullable = false, unique = true)
     private String indexNumber;
 
-    public Student() {}
+    public Student() {
+    }
 
     public Student(String firstName, String lastName, String indexNumber) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.indexNumber = indexNumber;
     }
-[...]
+//...
 }
 ```
 
@@ -196,7 +199,8 @@ osoby o tym samym numerze indeksu. Klasa ta stanowi stronę dominującą w relac
 
 ##### Model klasy `Course`
 
-```
+```java
+
 @Entity
 @Table(name = "courses")
 public class Course implements Serializable {
@@ -207,7 +211,7 @@ public class Course implements Serializable {
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;
-[...]
+//...
 }
 ```
 
@@ -216,6 +220,50 @@ Pole `name` posiada atrybut `unique = true`, co zapobiega wprowadzeniu do bazy d
 nazwie. Obiekty tej klasy są wykorzystywane w encji Grade do przypisania oceny do konkretnych zajęć.
 
 ### Task 3
+
+Zaproponowaliśmy poniższą strukturę projektu:
+
+```githubexpressionlanguage
+StudentManager
+├───client
+│   └───src
+│       └───main
+│           ├───java
+│           │   └───com
+│           │       └───studentmanager
+│           │           └───client
+│           └───resources
+├───docs-resources
+├───server
+│   └───src
+│       └───main
+│           └───java
+│               └───com
+│                   └───studentmanager
+│                       └───server
+└───shared
+    └───src
+        └───main
+            ├───java
+            │   └───com
+            │       └───studentmanager
+            │           └───shared
+            └───resources
+                └───META-INF
+```
+
+Rozdzieliliśmy logikę programu na 3 moduły: `Client`, `Server` i `Shared`. (+moduł przechowujący multimedia do docs -
+`docs-resources`). W `server/src/main/java/com/studentmanager/server` znajdują się klasy `Main` - inicjująca `RMI` i
+drugą klasę - `ServerImpl` - odpowiedzialną za logikę obsługiwania klienta.
+
+Aby uruchomić poprawnie serwer, należy w `Main` skonfigurować `ip` oraz `port` na którym będzie działać, oraz w
+`shared/src/main/resources` stworzyć plik o nazwie `db.properties`, który zawiera dane dostępu do bazy danych w
+następującym formacie:
+```properties
+db.user=DB_USER
+db.password=PASSWORD
+db.url=DB_URL
+```
 
 ### Task 4
 
