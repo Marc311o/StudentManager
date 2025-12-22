@@ -1,9 +1,6 @@
 package com.studentmanager.server;
 
-import com.studentmanager.shared.*; 
-// Zakładam, że encje (Student, Grade, Course) są w pakiecie shared lub odpowiednio zaimportowane
-// Jeśli są w shared, to import wyżej załatwia sprawę.
-
+import com.studentmanager.shared.*;
 import javax.persistence.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;

@@ -7,7 +7,7 @@ import java.util.List;
 public interface StudentService extends Remote {
     List<StudentDTO> getAllStudents() throws RemoteException;
     
-    // Nowa metoda do pobierania ocen dla konkretnego studenta
+    // Metoda do pobierania ocen dla konkretnego studenta
     List<GradeDTO> getGradesForStudent(Long studentId) throws RemoteException;
 
     void addStudent(StudentDTO student) throws RemoteException;
