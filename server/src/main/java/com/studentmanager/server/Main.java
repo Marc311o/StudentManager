@@ -1,9 +1,19 @@
 package com.studentmanager.server;
 
-public class Main {
+import com.studentmanager.shared.StudentService;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
+public class Main {
     public static void main(String[] args) {
-        System.out.println("Tu serwer będzie serwować");
-//        TODO: server logic
+        try {
+            System.setProperty("java.rmi.server.hostname", "localhost"); // Lub IP serwera
+            Registry registry = LocateRegistry.createRegistry(1099);
+            StudentService service = new ServerImpl();
+            registry.rebind("StudentService", service);
+            System.out.println("Serwer gotowy i nasłuchuje na porcie 1099...");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

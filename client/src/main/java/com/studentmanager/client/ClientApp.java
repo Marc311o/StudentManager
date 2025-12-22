@@ -12,6 +12,13 @@ public class ClientApp extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        try {
+        ClientConnection.connect(); // Połączenie z RMI
+    } catch (Exception e) {
+        // Pokaż Alert błędu połączenia i zamknij
+        e.printStackTrace();
+    }
+    
         FXMLLoader fxmlLoader = new FXMLLoader(ClientApp.class.getResource("/intro.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 400, 400);
 
