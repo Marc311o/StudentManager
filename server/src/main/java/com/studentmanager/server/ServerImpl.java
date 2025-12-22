@@ -11,9 +11,34 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of the remote {@link StudentService} interface.
+ * <p>
+ * This class serves as the RMI server backend, handling business logic and database interactions
+ * via JPA (Hibernate). It manages the lifecycle of {@link Student}, {@link Course}, and {@link Grade} entities.
+ * </p>
+ * <p>
+ * Database credentials are loaded dynamically from a {@code db.properties} file located in the
+ * resources folder, ensuring sensitive data is not hardcoded in the {@code persistence.xml}.
+ * </p>
+ */
 public class ServerImpl extends UnicastRemoteObject implements StudentService {
+
+    /**
+     * Factory for creating {@link EntityManager} instances to interact with the persistence context.
+     */
     private EntityManagerFactory emf;
 
+    /**
+     * Constructs the server implementation and initializes the JPA EntityManagerFactory.
+     * <p>
+     * This constructor attempts to load database connection properties (URL, user, password)
+     * from a {@code db.properties} file found in the classpath. These properties override
+     * the default settings defined in {@code persistence.xml}.
+     * </p>
+     *
+     * @throws RemoteException if the RMI object export fails.
+     */
     protected ServerImpl() throws RemoteException {
         super();
         Properties fileProps = new Properties();
@@ -37,6 +62,16 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         this.emf = Persistence.createEntityManagerFactory("StudentPU", jpaProps);
     }
 
+    /**
+     * Retrieves a list of all students currently stored in the database.
+     * <p>
+     * The method converts persistent {@link Student} entities into lightweight {@link StudentDTO}
+     * objects to ensure safe transmission over RMI.
+     * </p>
+     *
+     * @return a list of {@link StudentDTO} objects representing all students.
+     * @throws RemoteException if a communication error occurs during the RMI call.
+     */
     @Override
     public List<StudentDTO> getAllStudents() throws RemoteException {
         EntityManager em = emf.createEntityManager();
@@ -53,12 +88,21 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         }
     }
 
+    /**
+     * Retrieves all grades assigned to a specific student.
+     * <p>
+     * This method uses a {@code JOIN FETCH} query to efficiently retrieve the associated
+     * {@link Course} information for each grade in a single database query.
+     * </p>
+     *
+     * @param studentId the unique identifier of the student.
+     * @return a list of {@link GradeDTO} objects containing course names and grade values.
+     * @throws RemoteException if a communication error occurs during the RMI call.
+     */
     @Override
     public List<GradeDTO> getGradesForStudent(Long studentId) throws RemoteException {
         EntityManager em = emf.createEntityManager();
         try {
-            // Pobieramy oceny, gdzie student.id == studentId
-            // Używamy JOIN FETCH g.course, aby od razu mieć nazwę przedmiotu
             TypedQuery<Grade> query = em.createQuery(
                 "SELECT g FROM Grade g JOIN FETCH g.course WHERE g.student.id = :sid", Grade.class);
             query.setParameter("sid", studentId);
@@ -72,6 +116,12 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         }
     }
 
+    /**
+     * Adds a new student to the database.
+     *
+     * @param dto the {@link StudentDTO} object containing the new student's details.
+     * @throws RemoteException if the transaction fails or a database error occurs (e.g., duplicate index number).
+     */
     @Override
     public void addStudent(StudentDTO dto) throws RemoteException {
         EntityManager em = emf.createEntityManager();
@@ -88,6 +138,16 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         }
     }
 
+    /**
+     * Removes a student from the database based on their ID.
+     * <p>
+     * Due to the {@code CASCADE} settings in the entity model, removing a student
+     * will also automatically remove all associated grades.
+     * </p>
+     *
+     * @param studentId the unique identifier of the student to be removed.
+     * @throws RemoteException if a communication or database error occurs.
+     */
     @Override
     public void removeStudent(Long studentId) throws RemoteException {
         EntityManager em = emf.createEntityManager();
@@ -103,6 +163,16 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         }
     }
 
+    /**
+     * Adds a new course to the database if it does not already exist.
+     * <p>
+     * Checks for a course with the given name. If found, no action is taken.
+     * If not found, a new {@link Course} entity is persisted.
+     * </p>
+     *
+     * @param courseName the name of the course to add.
+     * @throws RemoteException if a communication or database error occurs.
+     */
     @Override
     public void addCourse(String courseName) throws RemoteException {
         EntityManager em = emf.createEntityManager();
@@ -121,6 +191,23 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         }
     }
 
+    /**
+     * Assigns a grade to a student for a specific course.
+     * <p>
+     * This method handles several logic steps:
+     * <ol>
+     * <li>Verifies the student exists.</li>
+     * <li>Checks if the course exists; if not, it creates a new {@link Course} automatically.</li>
+     * <li>Persists the new {@link Grade}.</li>
+     * </ol>
+     * </p>
+     *
+     * @param studentId   the unique identifier of the student.
+     * @param courseName  the name of the course.
+     * @param gradeValue  the numeric value of the grade.
+     * @throws RemoteException if the student is not found, or if a unique constraint violation occurs (e.g., duplicate grade for the same course).
+     * @throws IllegalArgumentException if the student with the given ID does not exist.
+     */
     @Override
     public void addGrade(Long studentId, String courseName, int gradeValue) throws RemoteException {
         EntityManager em = emf.createEntityManager();
@@ -152,6 +239,13 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         }
     }
 
+    /**
+     * Removes a specific grade for a student based on the course name.
+     *
+     * @param studentId  the unique identifier of the student.
+     * @param courseName the name of the course for which the grade should be removed.
+     * @throws RemoteException if a communication or database error occurs.
+     */
     @Override
     public void removeGrade(Long studentId, String courseName) throws RemoteException {
         EntityManager em = emf.createEntityManager();

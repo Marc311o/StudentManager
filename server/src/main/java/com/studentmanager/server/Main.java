@@ -7,7 +7,7 @@ import java.rmi.registry.Registry;
 public class Main {
     public static void main(String[] args) {
         try {
-            System.setProperty("java.rmi.server.hostname", "localhost"); // Lub IP serwera
+            System.setProperty("java.rmi.server.hostname", "localhost");
             Registry registry = LocateRegistry.createRegistry(1099);
             StudentService service = new ServerImpl();
             registry.rebind("StudentService", service);
