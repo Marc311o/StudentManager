@@ -223,7 +223,7 @@ public class ManagementController {
 
         dialog.setResultConverter(button -> {
             if (button == saveBtnType) {
-                // Używamy GradeDTO jako transportera danych z formularza, ID jest null
+                // Use GradeDTO as a temporary form data carrier; ID is null because it will be assigned when the grade is saved on the server
                 return new GradeDTO(null, nameField.getText(), Double.valueOf(ocenaBox.getValue()));
             }
             return null;
