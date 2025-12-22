@@ -141,15 +141,22 @@ public class ManagementController {
         dialogPane.getButtonTypes().addAll(saveBtnType, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
-        
-        TextField firstnameField = new TextField(); firstnameField.setPromptText("Imię");
-        TextField surnameField = new TextField(); surnameField.setPromptText("Nazwisko");
-        TextField indField = new TextField(); indField.setPromptText("123456");
+        grid.setHgap(10);
+        grid.setVgap(10);
 
-        grid.add(new Label("Imię:"), 0, 0); grid.add(firstnameField, 1, 0);
-        grid.add(new Label("Nazwisko:"), 0, 1); grid.add(surnameField, 1, 1);
-        grid.add(new Label("Indeks:"), 0, 2); grid.add(indField, 1, 2);
+        TextField firstnameField = new TextField();
+        firstnameField.setPromptText("Imię");
+        TextField surnameField = new TextField();
+        surnameField.setPromptText("Nazwisko");
+        TextField indField = new TextField();
+        indField.setPromptText("123456");
+
+        grid.add(new Label("Imię:"), 0, 0);
+        grid.add(firstnameField, 1, 0);
+        grid.add(new Label("Nazwisko:"), 0, 1);
+        grid.add(surnameField, 1, 1);
+        grid.add(new Label("Indeks:"), 0, 2);
+        grid.add(indField, 1, 2);
         dialogPane.setContent(grid);
 
         Node saveBtn = dialogPane.lookupButton(saveBtnType);
