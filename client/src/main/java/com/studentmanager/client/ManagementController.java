@@ -21,23 +21,44 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * The controller class for the main management view of the client application.
+ * <p>
+ * This class handles the JavaFX UI logic, responding to user actions such as adding or removing
+ * students and grades. It communicates with the backend server via the {@link ClientConnection}
+ * class to perform CRUD operations asynchronously, ensuring the UI remains responsive.
+ * </p>
+ */
 public class ManagementController {
 
-    // --- Tabela studentów ---
+    /** The table view displaying the list of students. */
     @FXML private TableView<StudentDTO> studentTable;
     @FXML private TableColumn<StudentDTO, String> firstnameCol;
     @FXML private TableColumn<StudentDTO, String> surnameCol;
     @FXML private TableColumn<StudentDTO, String> indCol;
 
-    // --- Tabela ocen ---
+    /** The table view displaying grades for the selected student. */
     @FXML private TableView<GradeDTO> gradeTable;
     @FXML private TableColumn<GradeDTO, String> nameCol;
     @FXML private TableColumn<GradeDTO, Double> gradeCol;
 
-    // --- Przyciski ---
+    /** Buttons to trigger student or grade deletion. */
     @FXML private Button deleteStudentBtn;
     @FXML private Button deleteGradeBtn;
 
+    /**
+     * Initializes the controller class.
+     * <p>
+     * This method is automatically called after the FXML file has been loaded. It sets up:
+     * <ul>
+     * <li>Table columns cell value factories.</li>
+     * <li>Placeholder text for empty tables.</li>
+     * <li>Initial data loading (student list).</li>
+     * <li>Bindings for button visibility based on table selection.</li>
+     * <li>A listener on the student table to fetch grades when a student is selected.</li>
+     * </ul>
+     * </p>
+     */
     @FXML
     public void initialize() {
         configureColumns();
@@ -45,14 +66,11 @@ public class ManagementController {
         studentTable.setPlaceholder(new Label("Ładowanie danych..."));
         gradeTable.setPlaceholder(new Label("Wybierz studenta, aby zobaczyć oceny"));
 
-        // Pobranie listy studentów na starcie
         refreshStudentList();
 
-        // Obsługa przycisków usuwania (aktywne tylko gdy coś zaznaczono)
         deleteStudentBtn.visibleProperty().bind(studentTable.getSelectionModel().selectedItemProperty().isNotNull());
         deleteGradeBtn.visibleProperty().bind(gradeTable.getSelectionModel().selectedItemProperty().isNotNull());
 
-        // Listener wyboru studenta -> pobierz jego oceny z serwera
         studentTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldStudent, newStudent) -> {
                     if (newStudent != null) {
@@ -64,7 +82,12 @@ public class ManagementController {
                 });
     }
 
-    // --- Konfiguracja kolumn tabel ---
+    /**
+     * Configures the cell value factories for the TableView columns.
+     * <p>
+     * Maps properties from {@link StudentDTO} and {@link GradeDTO} to the respective table columns.
+     * </p>
+     */
     private void configureColumns() {
         firstnameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getFirstName()));
         surnameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getLastName()));
@@ -74,8 +97,15 @@ public class ManagementController {
         gradeCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getValue()));
     }
 
-    // --- Pobieranie danych z serwera (Asynchronicznie) ---
-
+    // ============ SERVER DATA FETCHING ============
+    /**
+     * Fetches the list of all students from the server asynchronously.
+     * <p>
+     * Uses a background {@link Task} to prevent blocking the JavaFX Application Thread.
+     * On success, updates the {@code studentTable} items.
+     * On failure, displays an error alert.
+     * </p>
+     */
     private void refreshStudentList() {
         Task<List<StudentDTO>> task = new Task<>() {
             @Override
@@ -100,6 +130,11 @@ public class ManagementController {
         new Thread(task).start();
     }
 
+    /**
+     * Fetches the grades for a specific student from the server asynchronously.
+     *
+     * @param studentId the unique identifier of the student whose grades are to be fetched.
+     */
     private void fetchGradesForStudent(Long studentId) {
         gradeTable.setPlaceholder(new Label("Pobieranie ocen..."));
         
@@ -125,11 +160,16 @@ public class ManagementController {
         new Thread(task).start();
     }
 
-    // --- Akcje Użytkownika ---
-
+    // ============ USER ACTIONS ============
+    /**
+     * Handles the action of adding a new student.
+     * <p>
+     * Displays a dialog to input student details. Upon confirmation, sends a request to the server
+     * to create the student. If successful, the student list is refreshed.
+     * </p>
+     */
     @FXML
     public void addStudentAction() {
-        // UI Dialogu (bez zmian logicznych w samym wyglądzie)
         Dialog<StudentDTO> dialog = new Dialog<>();
         dialog.setTitle("Nowy Student");
         dialog.setHeaderText("Wprowadź dane studenta");
@@ -187,6 +227,13 @@ public class ManagementController {
         });
     }
 
+    /**
+     * Handles the action of adding a new grade for the currently selected student.
+     * <p>
+     * Displays a dialog to input the course name and grade value. Upon confirmation, sends a request
+     * to the server to add the grade. If successful, the grades table is refreshed.
+     * </p>
+     */
     @FXML
     public void addGradeAction() {
         StudentDTO selectedStudent = studentTable.getSelectionModel().getSelectedItem();
@@ -245,6 +292,13 @@ public class ManagementController {
         });
     }
 
+    /**
+     * Handles the action of deleting the selected student.
+     * <p>
+     * Prompts the user for confirmation before sending a removal request to the server.
+     * Upon success, clears the grade table and refreshes the student list.
+     * </p>
+     */
     @FXML
     public void deleteStudentAction() {
         StudentDTO selected = studentTable.getSelectionModel().getSelectedItem();
@@ -269,6 +323,13 @@ public class ManagementController {
         });
     }
 
+    /**
+     * Handles the action of deleting the selected grade.
+     * <p>
+     * Prompts the user for confirmation before sending a removal request to the server.
+     * Upon success, refreshes the grades list for the current student.
+     * </p>
+     */
     @FXML
     public void deleteGradeAction() {
         StudentDTO selectedStudent = studentTable.getSelectionModel().getSelectedItem();
@@ -290,7 +351,13 @@ public class ManagementController {
             }
         });
     }
-    
+
+    /**
+     * Navigates the user back to the main menu (Intro screen).
+     *
+     * @param event the ActionEvent triggered by the button click.
+     * @throws IOException if the FXML file for the intro screen cannot be loaded.
+     */
     public void goBackToMenuBtnRelease(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/intro.fxml")));
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

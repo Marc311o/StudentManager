@@ -268,6 +268,6 @@ db.url=DB_URL
 ### Task 4
 Po uruchomieniu aplikacji klienckiej wyświetla się wstępne okienko
 
-<div style="display: flex; justify-content: center;">
+<div style="display: flex; justify-content: center; width: 100%;">
   <img alt="img.png" height="300px" src="./docs-resources/client-intro-scene.png"/>
 </div>
