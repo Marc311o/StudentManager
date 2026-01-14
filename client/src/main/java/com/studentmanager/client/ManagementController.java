@@ -24,11 +24,6 @@ import java.util.Optional;
 
 /**
  * The controller class for the main management view of the client application.
- * <p>
- * This class handles the JavaFX UI logic, responding to user actions such as adding or removing
- * students and grades. It communicates with the backend server via the {@link ClientConnection}
- * class to perform CRUD operations asynchronously, ensuring the UI remains responsive.
- * </p>
  */
 public class ManagementController {
 
@@ -43,22 +38,15 @@ public class ManagementController {
     @FXML private TableColumn<GradeDTO, String> nameCol;
     @FXML private TableColumn<GradeDTO, Double> gradeCol;
 
-    /** Buttons to trigger student or grade deletion. */
+    /** Buttons to trigger student or grade operations. */
     @FXML private Button deleteStudentBtn;
     @FXML private Button deleteGradeBtn;
+    
+    // === NOWE: Przycisk edycji ===
+    @FXML private Button editGradeBtn;
 
     /**
      * Initializes the controller class.
-     * <p>
-     * This method is automatically called after the FXML file has been loaded. It sets up:
-     * <ul>
-     * <li>Table columns cell value factories.</li>
-     * <li>Placeholder text for empty tables.</li>
-     * <li>Initial data loading (student list).</li>
-     * <li>Bindings for button visibility based on table selection.</li>
-     * <li>A listener on the student table to fetch grades when a student is selected.</li>
-     * </ul>
-     * </p>
      */
     @FXML
     public void initialize() {
@@ -69,8 +57,16 @@ public class ManagementController {
 
         refreshStudentList();
 
+        // Wiązanie widoczności przycisków
         deleteStudentBtn.visibleProperty().bind(studentTable.getSelectionModel().selectedItemProperty().isNotNull());
+        
+        // Zarówno usuwanie jak i edycja wymagają zaznaczenia konkretnej oceny
         deleteGradeBtn.visibleProperty().bind(gradeTable.getSelectionModel().selectedItemProperty().isNotNull());
+        
+        // === NOWE: Wiązanie widoczności przycisku edycji ===
+        if (editGradeBtn != null) {
+            editGradeBtn.visibleProperty().bind(gradeTable.getSelectionModel().selectedItemProperty().isNotNull());
+        }
 
         studentTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldStudent, newStudent) -> {
@@ -83,12 +79,6 @@ public class ManagementController {
                 });
     }
 
-    /**
-     * Configures the cell value factories for the TableView columns.
-     * <p>
-     * Maps properties from {@link StudentDTO} and {@link GradeDTO} to the respective table columns.
-     * </p>
-     */
     private void configureColumns() {
         firstnameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getFirstName()));
         surnameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getLastName()));
@@ -99,14 +89,7 @@ public class ManagementController {
     }
 
     // ============ SERVER DATA FETCHING ============
-    /**
-     * Fetches the list of all students from the server asynchronously.
-     * <p>
-     * Uses a background {@link Task} to prevent blocking the JavaFX Application Thread.
-     * On success, updates the {@code studentTable} items.
-     * On failure, displays an error alert.
-     * </p>
-     */
+
     private void refreshStudentList() {
         Task<List<StudentDTO>> task = new Task<>() {
             @Override
@@ -124,6 +107,7 @@ public class ManagementController {
 
         task.setOnFailed(e -> {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Nie udało się pobrać listy studentów.");
+            styleDialog(alert);
             alert.show();
             e.getSource().getException().printStackTrace();
         });
@@ -131,11 +115,6 @@ public class ManagementController {
         new Thread(task).start();
     }
 
-    /**
-     * Fetches the grades for a specific student from the server asynchronously.
-     *
-     * @param studentId the unique identifier of the student whose grades are to be fetched.
-     */
     private void fetchGradesForStudent(Long studentId) {
         gradeTable.setPlaceholder(new Label("Pobieranie ocen..."));
         
@@ -162,13 +141,7 @@ public class ManagementController {
     }
 
     // ============ USER ACTIONS ============
-    /**
-     * Handles the action of adding a new student.
-     * <p>
-     * Displays a dialog to input student details. Upon confirmation, sends a request to the server
-     * to create the student. If successful, the student list is refreshed.
-     * </p>
-     */
+
     @FXML
     public void addStudentAction() {
         Dialog<StudentDTO> dialog = new Dialog<>();
@@ -225,13 +198,6 @@ public class ManagementController {
         });
     }
 
-    /**
-     * Handles the action of adding a new grade for the currently selected student.
-     * <p>
-     * Displays a dialog to input the course name and grade value. Upon confirmation, sends a request
-     * to the server to add the grade. If successful, the grades table is refreshed.
-     * </p>
-     */
     @FXML
     public void addGradeAction() {
         StudentDTO selectedStudent = studentTable.getSelectionModel().getSelectedItem();
@@ -293,13 +259,77 @@ public class ManagementController {
         });
     }
 
-    /**
-     * Handles the action of deleting the selected student.
-     * <p>
-     * Prompts the user for confirmation before sending a removal request to the server.
-     * Upon success, clears the grade table and refreshes the student list.
-     * </p>
-     */
+    // === NOWE: Akcja edycji oceny ===
+    @FXML
+    public void editGradeAction() {
+        StudentDTO selectedStudent = studentTable.getSelectionModel().getSelectedItem();
+        GradeDTO selectedGrade = gradeTable.getSelectionModel().getSelectedItem();
+
+        if (selectedStudent == null || selectedGrade == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Wybierz studenta i ocenę do edycji!");
+            styleDialog(alert);
+            alert.show();
+            return;
+        }
+
+        Dialog<Integer> dialog = new Dialog<>();
+        dialog.setTitle("Edycja Oceny");
+        dialog.setHeaderText("Zmień ocenę z przedmiotu: " + selectedGrade.getCourseName());
+
+        ButtonType saveBtnType = new ButtonType("Zapisz", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveBtnType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        ComboBox<Integer> ocenaBox = new ComboBox<>();
+        ocenaBox.getItems().addAll(2, 3, 4, 5);
+        // Ustawienie aktualnej wartości
+        ocenaBox.setValue(selectedGrade.getValue().intValue());
+
+        grid.add(new Label("Nowa ocena:"), 0, 0);
+        grid.add(ocenaBox, 1, 0);
+
+        dialog.getDialogPane().setContent(grid);
+        styleDialog(dialog);
+
+        dialog.setResultConverter(button -> {
+            if (button == saveBtnType) {
+                return ocenaBox.getValue();
+            }
+            return null;
+        });
+
+        Optional<Integer> result = dialog.showAndWait();
+        result.ifPresent(newGradeValue -> {
+            Task<Void> task = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    ClientConnection.getService().updateGrade(
+                            selectedStudent.getId(),
+                            selectedGrade.getCourseName(),
+                            newGradeValue
+                    );
+                    return null;
+                }
+            };
+
+            task.setOnSucceeded(e -> {
+                System.out.println("Zaktualizowano ocenę.");
+                fetchGradesForStudent(selectedStudent.getId());
+            });
+
+            task.setOnFailed(e -> {
+                Alert errorAlert = new Alert(Alert.AlertType.ERROR, "Błąd aktualizacji: " + e.getSource().getException().getMessage());
+                styleDialog(errorAlert);
+                errorAlert.show();
+            });
+
+            new Thread(task).start();
+        });
+    }
+
     @FXML
     public void deleteStudentAction() {
         StudentDTO selected = studentTable.getSelectionModel().getSelectedItem();
@@ -329,13 +359,6 @@ public class ManagementController {
         });
     }
 
-    /**
-     * Handles the action of deleting the selected grade.
-     * <p>
-     * Prompts the user for confirmation before sending a removal request to the server.
-     * Upon success, refreshes the grades list for the current student.
-     * </p>
-     */
     @FXML
     public void deleteGradeAction() {
         StudentDTO selectedStudent = studentTable.getSelectionModel().getSelectedItem();
@@ -349,8 +372,6 @@ public class ManagementController {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.YES) {
-                System.out.println("Kliknięto Potwierdź - wysyłanie żądania do serwera..."); // DEBUG
-
                 Task<Void> task = new Task<>() {
                     @Override
                     protected Void call() throws Exception {
@@ -359,33 +380,20 @@ public class ManagementController {
                     }
                 };
 
-                task.setOnSucceeded(e -> {
-                    System.out.println("Usunięto pomyślnie. Odświeżam widok."); // DEBUG
-                    fetchGradesForStudent(selectedStudent.getId());
-                });
+                task.setOnSucceeded(e -> fetchGradesForStudent(selectedStudent.getId()));
 
                 task.setOnFailed(e -> {
                     Throwable error = e.getSource().getException();
-                    System.err.println("Błąd usuwania: " + error.getMessage()); // DEBUG
-
                     Alert errorAlert = new Alert(Alert.AlertType.ERROR, "Nie udało się usunąć oceny:\n" + error.getMessage());
                     styleDialog(errorAlert);
                     errorAlert.show();
                 });
 
                 new Thread(task).start();
-            } else {
-                System.out.println("Anulowano usuwanie."); // DEBUG
             }
         });
     }
 
-    /**
-     * Navigates the user back to the main menu (Intro screen).
-     *
-     * @param event the ActionEvent triggered by the button click.
-     * @throws IOException if the FXML file for the intro screen cannot be loaded.
-     */
     public void goBackToMenuBtnRelease(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/intro.fxml")));
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -394,27 +402,23 @@ public class ManagementController {
         stage.show();
     }
 
-    /**
-     * Główna metoda stylizująca dialogi i alerty.
-     * 1. Dodaje CSS.
-     * 2. Dodaje Ikonę.
-     * 3. Zamienia przyciski:
-     * - OK/YES/Zapisz/Dodaj -> Klasa btn-success (zielony)
-     * - CANCEL/NO -> Klasa btn-danger (czerwony) + Tekst "Anuluj"
-     */
     private void styleDialog(Dialog<?> dialog) {
         DialogPane dialogPane = dialog.getDialogPane();
 
         try {
-            dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
-            dialogPane.getStyleClass().add("dialog-pane");
+            if (getClass().getResource("/style.css") != null) {
+                dialogPane.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
+                dialogPane.getStyleClass().add("dialog-pane");
+            }
         } catch (Exception e) {
             System.err.println("Błąd ładowania CSS: " + e.getMessage());
         }
 
         try {
             Stage stage = (Stage) dialogPane.getScene().getWindow();
-            stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/logo_square.jpg"))));
+            if (getClass().getResourceAsStream("/logo_square.jpg") != null) {
+                stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/logo_square.jpg"))));
+            }
         } catch (Exception e) {
             System.err.println("Błąd ładowania ikonki: " + e.getMessage());
         }
@@ -423,11 +427,10 @@ public class ManagementController {
             Node node = dialogPane.lookupButton(btnType);
             if (node instanceof Button) {
                 Button btn = (Button) node;
-
                 if (btnType.getButtonData() == ButtonBar.ButtonData.OK_DONE || btnType == ButtonType.YES) {
                     btn.getStyleClass().add("btn-success");
                     btn.setText("Potwierdź");
-                }else if (btnType == ButtonType.CANCEL || btnType == ButtonType.NO || btnType == ButtonType.CLOSE) {
+                } else if (btnType == ButtonType.CANCEL || btnType == ButtonType.NO || btnType == ButtonType.CLOSE) {
                     btn.getStyleClass().add("btn-danger");
                     btn.setText("Anuluj");
                 }

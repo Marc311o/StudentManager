@@ -251,11 +251,77 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
-            Query q = em.createQuery("DELETE FROM Grade g WHERE g.student.id = :sid AND g.course.name = :cname");
-            q.setParameter("sid", studentId);
-            q.setParameter("cname", courseName);
-            q.executeUpdate();
+            
+            // Zmienione zapytanie: używamy podzapytania zamiast niejawnego JOINa
+            Query q = em.createQuery(
+                "DELETE FROM Grade g WHERE g.student.id = :id AND g.course.id IN (SELECT c.id FROM Course c WHERE c.name = :name)"
+            );
+            
+            q.setParameter("id", studentId);
+            q.setParameter("name", courseName);
+            
+            int deletedCount = q.executeUpdate();
+            System.out.println("Usunięto ocen: " + deletedCount); // Opcjonalnie logowanie
+            
             em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+            throw new RemoteException("Błąd podczas usuwania oceny: " + e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Modyfikuje wartość istniejącej oceny dla studenta z określonego przedmiotu.
+     * <p>
+     * Metoda wyszukuje encję {@link Grade} na podstawie ID studenta i nazwy kursu.
+     * Ponieważ operujemy wewnątrz aktywnej transakcji, wystarczy zmienić wartość
+     * na pobranym obiekcie (JPA automatycznie wykryje zmianę - tzw. dirty checking),
+     * nie ma potrzeby wywoływania jawnego {@code em.merge()}.
+     * </p>
+     *
+     * @param studentId     unikalny identyfikator studenta.
+     * @param courseName    nazwa kursu, którego ocena ma zostać zmieniona.
+     * @param newGradeValue nowa wartość liczbowa oceny.
+     * @throws RemoteException jeśli wystąpi błąd komunikacji, bazy danych lub ocena nie zostanie znaleziona.
+     */
+    @Override
+    public void updateGrade(Long studentId, String courseName, int newGradeValue) throws RemoteException {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            // Szukamy oceny dla danego studenta i kursu
+            // Używamy JOIN, aby powiązać ocenę z nazwą kursu
+            TypedQuery<Grade> query = em.createQuery(
+                "SELECT g FROM Grade g JOIN g.course c WHERE g.student.id = :sid AND c.name = :cname",
+                Grade.class
+            );
+            query.setParameter("sid", studentId);
+            query.setParameter("cname", courseName);
+
+            try {
+                Grade grade = query.getSingleResult();
+                // Modyfikacja obiektu w stanie MANAGED - Hibernate automatycznie wyśle UPDATE przy commit
+                grade.setValue((double) newGradeValue);
+            } catch (NoResultException e) {
+                throw new RemoteException("Nie znaleziono oceny z przedmiotu '" + courseName + "' dla studenta o ID: " + studentId);
+            }
+
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            // Jeśli to nasz RemoteException rzucony wyżej (brak oceny), przepuszczamy go dalej
+            if (e instanceof RemoteException) {
+                throw (RemoteException) e;
+            }
+            throw new RemoteException("Błąd podczas modyfikacji oceny: " + e.getMessage(), e);
         } finally {
             em.close();
         }

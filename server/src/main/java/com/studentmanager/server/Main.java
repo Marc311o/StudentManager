@@ -17,7 +17,7 @@ public class Main {
     /**
      * The hostname or IP address that the RMI server will export to clients.
      */
-    final private static String ip = "localhost";
+    final private static String ip = "10.128.52.56";
     /**
      * The network port on which the RMI registry listens for incoming requests.
      * <p>
