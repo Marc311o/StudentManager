@@ -252,7 +252,6 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         try {
             em.getTransaction().begin();
             
-            // Zmienione zapytanie: używamy podzapytania zamiast niejawnego JOINa
             Query q = em.createQuery(
                 "DELETE FROM Grade g WHERE g.student.id = :id AND g.course.id IN (SELECT c.id FROM Course c WHERE c.name = :name)"
             );
@@ -261,7 +260,7 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
             q.setParameter("name", courseName);
             
             int deletedCount = q.executeUpdate();
-            System.out.println("Usunięto ocen: " + deletedCount); // Opcjonalnie logowanie
+            System.out.println("Usunięto ocen: " + deletedCount);
             
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -295,8 +294,6 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
         try {
             em.getTransaction().begin();
 
-            // Szukamy oceny dla danego studenta i kursu
-            // Używamy JOIN, aby powiązać ocenę z nazwą kursu
             TypedQuery<Grade> query = em.createQuery(
                 "SELECT g FROM Grade g JOIN g.course c WHERE g.student.id = :sid AND c.name = :cname",
                 Grade.class
@@ -306,7 +303,6 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
 
             try {
                 Grade grade = query.getSingleResult();
-                // Modyfikacja obiektu w stanie MANAGED - Hibernate automatycznie wyśle UPDATE przy commit
                 grade.setValue((double) newGradeValue);
             } catch (NoResultException e) {
                 throw new RemoteException("Nie znaleziono oceny z przedmiotu '" + courseName + "' dla studenta o ID: " + studentId);
@@ -317,11 +313,27 @@ public class ServerImpl extends UnicastRemoteObject implements StudentService {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            // Jeśli to nasz RemoteException rzucony wyżej (brak oceny), przepuszczamy go dalej
             if (e instanceof RemoteException) {
                 throw (RemoteException) e;
             }
             throw new RemoteException("Błąd podczas modyfikacji oceny: " + e.getMessage(), e);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public double getAverageGradeForCourse(String courseName) throws RemoteException {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<Double> query = em.createQuery(
+                    "SELECT AVG(g.value) FROM Grade g JOIN g.course c WHERE c.name = :name", Double.class);
+            query.setParameter("name", courseName);
+
+            Double avg = query.getSingleResult();
+            return (avg != null) ? avg : 0.0;
+        } catch (Exception e) {
+            throw new RemoteException("Błąd obliczania średniej: " + e.getMessage());
         } finally {
             em.close();
         }

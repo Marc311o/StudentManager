@@ -24,6 +24,7 @@ public interface StudentService extends Remote {
 
     void removeGrade(Long studentId, String courseName) throws RemoteException;
 
-    // === TO JEST BRAKUJĄCA LINIJKA, KTÓRĄ MUSISZ DODAĆ ===
     void updateGrade(Long studentId, String courseName, int newGradeValue) throws RemoteException;
+
+    double getAverageGradeForCourse(String courseName) throws RemoteException;
 }

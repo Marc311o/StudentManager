@@ -45,6 +45,10 @@ public class ManagementController {
     // === NOWE: Przycisk edycji ===
     @FXML private Button editGradeBtn;
 
+    @FXML private Button avgGradeBtn;
+
+
+
     /**
      * Initializes the controller class.
      */
@@ -62,10 +66,13 @@ public class ManagementController {
         
         // Zarówno usuwanie jak i edycja wymagają zaznaczenia konkretnej oceny
         deleteGradeBtn.visibleProperty().bind(gradeTable.getSelectionModel().selectedItemProperty().isNotNull());
-        
-        // === NOWE: Wiązanie widoczności przycisku edycji ===
+
         if (editGradeBtn != null) {
             editGradeBtn.visibleProperty().bind(gradeTable.getSelectionModel().selectedItemProperty().isNotNull());
+        }
+
+        if (avgGradeBtn != null) {
+            avgGradeBtn.visibleProperty().bind(gradeTable.getSelectionModel().selectedItemProperty().isNotNull());
         }
 
         studentTable.getSelectionModel().selectedItemProperty().addListener(
@@ -436,5 +443,47 @@ public class ManagementController {
                 }
             }
         }
+    }
+
+    @FXML
+    public void calculateAverageAction() {
+
+        GradeDTO selectedGrade = gradeTable.getSelectionModel().getSelectedItem();
+
+        if (selectedGrade == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "Wybierz ocenę/przedmiot z tabeli!");
+            styleDialog(alert);
+            alert.show();
+            return;
+        }
+
+        String courseName = selectedGrade.getCourseName();
+
+        Task<Double> task = new Task<>() {
+            @Override
+            protected Double call() throws Exception {
+                return ClientConnection.getService().getAverageGradeForCourse(courseName);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            double avg = task.getValue();
+            String resultMsg = (avg == 0)
+                    ? "Brak danych dla przedmiotu: " + courseName
+                    : String.format("Średnia ocen wszystkich studentów z przedmiotu %s wynosi: %.2f", courseName, avg);
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, resultMsg);
+            alert.setTitle("Średnia ocen");
+            styleDialog(alert);
+            alert.show();
+        });
+
+        task.setOnFailed(e -> {
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR, "Błąd: " + e.getSource().getException().getMessage());
+            styleDialog(errorAlert);
+            errorAlert.show();
+        });
+
+        new Thread(task).start();
     }
 }

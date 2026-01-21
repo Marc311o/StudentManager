@@ -9,6 +9,7 @@ public class ClientConnection {
     private static StudentService service;
 
     public static void connect() throws Exception {
+//        Registry registry = LocateRegistry.getRegistry("10.128.52.56", 1099);
         Registry registry = LocateRegistry.getRegistry("localhost", 1099);
         service = (StudentService) registry.lookup("StudentService");
     }
