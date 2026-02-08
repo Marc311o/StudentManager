@@ -51,14 +51,18 @@ Button:pressed {
 }
 
 
-.danger-button {
+.btn-danger {
     -fx-background-color: #dc3545 !important;
     -fx-text-fill: white !important;
     /*-fx-font-weight: bold;*/
 }
 
-.danger-button:hover {
+.btn-danger:hover {
     -fx-background-color: #bb2d3b !important;
+}
+
+.btn-danger:pressed {
+    -fx-background-color: #94232f !important;
 }
 
 .btn-success {

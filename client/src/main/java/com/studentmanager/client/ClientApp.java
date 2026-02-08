@@ -13,9 +13,8 @@ public class ClientApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         try {
-        ClientConnection.connect(); // Połączenie z RMI
+        ClientConnection.connect();
     } catch (Exception e) {
-        // Pokaż Alert błędu połączenia i zamknij
         e.printStackTrace();
     }
     
