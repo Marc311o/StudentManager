@@ -271,3 +271,15 @@ Po uruchomieniu aplikacji klienckiej wyświetla się wstępne okienko
 <div style="display: flex; justify-content: center; width: 100%;">
   <img alt="img.png" height="300px" src="./docs-resources/client-intro-scene.png"/>
 </div>
+
+Z którego (jeżeli serwer jest uruchomiony) możemy przejść dalej do głównego interfejsu  z poziomu którego możemy zarządzać listą studentów i ich ocenami.
+
+<div style="display: flex; justify-content: center; width: 100%; margin-top:10px;">
+  <img alt="img.png" height="300px" src="./docs-resources/client-main-ui.png"/>
+</div>
+
+Po wciśnięciu w ocenę studenta pojawiają się dodatkowe opcje związane z zarządzaniem daną oceną, jak i opcja wyświetlenia średniej ocen z danego przedmiotu wśród studentów.
+
+<div style="display: flex; justify-content: center; width: 100%; margin-top:10px;">
+  <img alt="img.png" height="300px" src="./docs-resources/client-inspect-grade.png"/>
+</div>
